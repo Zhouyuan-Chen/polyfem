@@ -93,6 +93,7 @@ namespace polyfem::io
 			}
 		}
 
+		std::vector<int> els_type_records;
 		int cells_cols = -1;
 		int num_els = 0;
 		for (const auto &e : els.entity_blocks)
@@ -103,32 +104,46 @@ namespace polyfem::io
 
 			if (type == 2 || type == 9 || type == 21 || type == 23 || type == 25) // tri
 			{
-				assert(cells_cols == -1 || cells_cols == 3);
-				cells_cols = 3;
+				// assert(cells_cols == -1 || cells_cols == 3);
+				// cells_cols = 3;
+				assert(cells_cols == -1 || cells_cols == 3 || cells_cols == 4); // maybe the hybird(tri+quad)
+				cells_cols = std::max(cells_cols, 3);
+				els_type_records.push_back(3);
+
 				num_els += e.num_elements_in_block;
 			}
 			else if (type == 3 || type == 10) // quad
 			{
-				assert(cells_cols == -1 || cells_cols == 4);
-				cells_cols = 4;
+				// assert(cells_cols == -1 || cells_cols == 4);
+				// cells_cols = 4;
+				assert(cells_cols == -1 || cells_cols == 4 || cells_cols == 3); // maybe the hybird(tri+quad)
+				cells_cols = std::max(cells_cols, 4);
+				els_type_records.push_back(4);
+
 				num_els += e.num_elements_in_block;
 			}
 			else if (type == 4 || type == 11 || type == 29 || type == 30 || type == 31) // tet
 			{
 				assert(cells_cols == -1 || cells_cols == 4);
 				cells_cols = 4;
+				els_type_records.push_back(4);
+
 				num_els += e.num_elements_in_block;
 			}
 			else if (type == 5 || type == 12) // hex
 			{
 				assert(cells_cols == -1 || cells_cols == 8);
 				cells_cols = 8;
+				els_type_records.push_back(8);
+
 				num_els += e.num_elements_in_block;
 			}
 			else if (type == 6) // prism
 			{
 				assert(cells_cols == -1 || cells_cols == 6);
 				cells_cols = 6;
+				els_type_records.push_back(6);
+
 				num_els += e.num_elements_in_block;
 			}
 		}
@@ -145,18 +160,25 @@ namespace polyfem::io
 		elements.resize(num_els);
 		weights.resize(num_els);
 		int cell_index = 0;
+
+		cells.setConstant(-1);
+		int e_cnt = 0;
+
 		for (const auto &e : els.entity_blocks)
 		{
 			if (e.entity_dim != dim)
 				continue;
 			const int type = e.element_type;
+
+			const int col_num = els_type_records[e_cnt++];
+
 			if (type == 2 || type == 9 || type == 21 || type == 23 || type == 25 || type == 3 || type == 10 || type == 4 || type == 11 || type == 29 || type == 30 || type == 31 || type == 5 || type == 12 || type == 6)
 			{
 				const size_t n_nodes = mshio::nodes_per_element(type);
 				for (int i = 0; i < e.data.size(); i += (n_nodes + 1))
 				{
 					int index = 0;
-					for (int j = i + 1; j <= i + cells_cols; ++j)
+					for (int j = i + 1; j <= i + col_num; ++j)
 					{
 						const int v_index = tag_to_index[e.data[j]];
 						assert(v_index < n_vertices);
@@ -185,11 +207,11 @@ namespace polyfem::io
 		{
 			for (const auto &str : data.header.string_tags)
 				node_data_name.push_back(str);
-			
+
 			for (const auto &entry : data.entries)
 				for (const auto &d : entry.data)
 					node_data[i].push_back(d);
-			
+
 			i++;
 		}
 

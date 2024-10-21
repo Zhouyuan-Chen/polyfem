@@ -572,6 +572,40 @@ namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 
+// void polyfem::mesh::to_geogram_mesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, GEO::Mesh &M)
+// {
+// 	M.clear();
+// 	// Setup vertices
+// 	M.vertices.create_vertices((int)V.rows());
+// 	for (int i = 0; i < (int)M.vertices.nb(); ++i)
+// 	{
+// 		GEO::vec3 &p = M.vertices.point(i);
+// 		p[0] = V(i, 0);
+// 		p[1] = V(i, 1);
+// 		p[2] = V.cols() >= 3 ? V(i, 2) : 0;
+// 	}
+// 	// Setup faces
+// 	if (F.cols() == 3)
+// 	{
+// 		M.facets.create_triangles((int)F.rows());
+// 	}
+// 	else if (F.cols() == 4)
+// 	{
+// 		M.facets.create_quads((int)F.rows());
+// 	}
+// 	else
+// 	{
+// 		throw std::runtime_error("Mesh format not supported");
+// 	}
+// 	for (int c = 0; c < (int)M.facets.nb(); ++c)
+// 	{
+// 		for (int lv = 0; lv < F.cols(); ++lv)
+// 		{
+// 			M.facets.set_vertex(c, lv, F(c, lv));
+// 		}
+// 	}
+// }
+
 void polyfem::mesh::to_geogram_mesh(const Eigen::MatrixXd &V, const Eigen::MatrixXi &F, GEO::Mesh &M)
 {
 	M.clear();
@@ -585,21 +619,36 @@ void polyfem::mesh::to_geogram_mesh(const Eigen::MatrixXd &V, const Eigen::Matri
 		p[2] = V.cols() >= 3 ? V(i, 2) : 0;
 	}
 	// Setup faces
-	if (F.cols() == 3)
+	std::vector<int> element_size_list;
+	for (int c = 0; c < F.rows(); c++)
 	{
-		M.facets.create_triangles((int)F.rows());
+		int positive_cnt = 0;
+		for (int lv = 0; lv < F.cols(); lv++)
+		{
+			if (F(c, lv) == -1)
+				break;
+			positive_cnt++;
+		}
+		if (positive_cnt == 3)
+		{
+			M.facets.create_triangles(1);
+			element_size_list.push_back(3);
+		}
+		else if (positive_cnt == 4)
+		{
+			M.facets.create_quads(1);
+			element_size_list.push_back(4);
+		}
+		else
+		{
+			throw std::runtime_error("Mesh format not supported");
+		}
 	}
-	else if (F.cols() == 4)
+
+	for (int c = 0; c < F.rows(); c++)
 	{
-		M.facets.create_quads((int)F.rows());
-	}
-	else
-	{
-		throw std::runtime_error("Mesh format not supported");
-	}
-	for (int c = 0; c < (int)M.facets.nb(); ++c)
-	{
-		for (int lv = 0; lv < F.cols(); ++lv)
+		int cols = element_size_list[c];
+		for (int lv = 0; lv < cols; ++lv)
 		{
 			M.facets.set_vertex(c, lv, F(c, lv));
 		}

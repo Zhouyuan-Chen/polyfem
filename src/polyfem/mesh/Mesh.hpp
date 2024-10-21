@@ -206,7 +206,7 @@ namespace polyfem
 			/// @param[in] lv_id *local* vertex id
 			/// @return vertex id
 			virtual int cell_vertex(const int f_id, const int lv_id) const = 0;
-			/// @brief id of the vertex of a element
+			/// @brief id of the vertex of an element
 			///
 			/// @param[in] el_id *global* element id
 			/// @param[in] lv_id *local* vertex id
@@ -470,7 +470,7 @@ namespace polyfem
 				if (is_volume() ? is_boundary_face(primitive) : is_boundary_edge(primitive))
 					return std::numeric_limits<int>::max(); // default for no selected boundary
 				else
-					return -1;                              // default for no boundary
+					return -1; // default for no boundary
 			}
 
 			/// @brief Get the boundary selection of an element (face in 3d, edge in 2d)
@@ -559,7 +559,7 @@ namespace polyfem
 
 			/// @brief method used to finalize the mesh. It computes the cached stuff used in navigation
 			///
-			virtual void prepare_mesh(){};
+			virtual void prepare_mesh() {};
 
 			/// @brief checks if the mesh has polytopes
 			///

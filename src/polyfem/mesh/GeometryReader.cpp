@@ -35,7 +35,6 @@ namespace polyfem::mesh
 			log_and_throw_error("Only volumetric elements are implemented for FEM meshes!");
 
 		std::unique_ptr<Mesh> mesh = Mesh::create(resolve_path(j_mesh["mesh"], root_path), non_conforming);
-
 		// --------------------------------------------------------------------
 
 		// NOTE: Normaliziation is done before transformations are applied and/or any selection operators

@@ -132,6 +132,37 @@ TEST_CASE("inverse", "[utils]")
 	REQUIRE(((utils::inverse(mat3) - mat3_inv)).norm() == Catch::Approx(0).margin(1e-12));
 }
 
+TEST_CASE("hybrid", "[utils]")
+{
+	std::string path = "/home/zhouyuan/workplace/mypolyfem/polyfem/mytests/quad_triangle_mesh.msh";
+	Eigen::MatrixXd V, F, T;
+	Eigen::MatrixXi Cell;
+	std::vector<std::vector<int>> elements;
+	std::vector<std::vector<double>> weights;
+	std::vector<int> body_ids;
+	MshReader::load(path, V, Cell, elements, weights, body_ids);
+
+	std::cout << Cell.row(0) << std::endl;
+	std::cout << Cell.row(1) << std::endl;
+	std::cout << Cell.row(2) << std::endl;
+
+	std::cout << elements[0].size() << std::endl;
+	std::cout << elements[1].size() << std::endl;
+	std::cout << elements[2].size() << std::endl;
+}
+
+TEST_CASE("hybrid_load", "[utils]")
+{
+	Eigen::MatrixXd vertices;
+	Eigen::MatrixXi cells;
+	std::vector<std::vector<int>> elements;
+	std::vector<std::vector<double>> weights;
+	std::vector<int> body_ids;
+	std::string path = "/home/zhouyuan/workplace/mypolyfem/polyfem/mytests/quad_triangle_mesh.msh";
+	MshReader::load(path, vertices, cells, elements, weights, body_ids);
+	std::unique_ptr<Mesh> mesh = Mesh::create(vertices, cells, false);
+}
+
 #ifdef POLYFEM_WITH_REMESHING
 TEST_CASE("wmtk_instatiation", "[utils]")
 {
